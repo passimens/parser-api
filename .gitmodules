@@ -1,0 +1,3 @@
+[submodule "magritte"]
+	path = magritte
+	url = ssh://git@github.com/Assargadon/magritte-python.git
