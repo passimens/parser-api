@@ -9,11 +9,6 @@ from pipe_reader import get_stream_reader
 logger = logging.getLogger(__name__)
 
 
-async def a_print(item) -> None:
-    """Asynchronous version of print for use in callbacks."""
-    print(item)
-
-
 class BaseParser:
     results_description: List[MADescription] = []
 
@@ -33,6 +28,6 @@ class BaseParser:
             ) -> None:
         """Helper method. Opens a file and passes it to parse_stream."""
         with open(file_name, 'rb') as file:
-            reader, _ = get_stream_reader(file)
+            reader, _ = await get_stream_reader(file)
             await self.parse_stream(reader)
 
