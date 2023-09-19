@@ -48,7 +48,7 @@ class BaseParser:
         logger.debug(f"for fifo_path = {fifo_path}.")
 
         fifo = AsyncFifo(fifo_path)
-        async with await fifo.open() as reader:
+        with await fifo.open() as reader:
             await self.parse_stream(reader)
 
         logger.info("parse_fifo() finished.")

@@ -89,12 +89,12 @@ class AsyncFifo:
         if not self._transport.is_closing():
             self._transport.close()
 
-    async def __aenter__(self):
+    def __enter__(self):
         """Async context manager entry point."""
         logger.info("AsyncFifo.__enter__() invoked.")
         return self._reader
 
-    async def __aexit__(self, exc_type, exc, tb):
+    def __exit__(self, exc_type, exc, tb):
         """Async context manager exit point."""
         logger.info("AsyncFifo.__exit__() invoked.")
         self.close()
