@@ -18,24 +18,20 @@ class PrinterParser(BaseParser):
     def __init__(self):
         super().__init__(a_print)
 
-    async def parse_stream(
+    async def _parse_line(
             self,
-            pipe: asyncio.StreamReader,
+            line: str,
             ) -> None:
-        """Main class method. Parses a stream of data from a pipe."""
-        while True:
-            line = await pipe.readline()
-            if not line:
-                break
-            await self._result_callback([line])
+        """Parses a single line of data."""
+        await self._result_callback([line])
 
 
 if __name__ == "__main__":
 
-    async def main(file=None) -> None:
+    async def main(fifo=None) -> None:
         parser = PrinterParser()
-        if file:
-            await parser.parse_file(file)
+        if fifo:
+            await parser.parse_fifo(fifo)
         else:
             reader, _ = await get_stream_reader(sys.stdin)
             await parser.parse_stream(reader)

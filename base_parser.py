@@ -4,7 +4,7 @@ from typing import List, Callable, Awaitable, Any
 
 from magritte.Magritte.MADescription_class import MADescription
 import asyncio
-from pipe_reader import get_stream_reader
+from async_fifo import AsyncFifo
 
 logger = logging.getLogger(__name__)
 
@@ -23,30 +23,32 @@ class BaseParser:
             self,
             pipe: asyncio.StreamReader,
             encoding: str = "latin1",
-            stop_at_eof: bool = True,
             ) -> None:
-        """Main class method. Parses a stream of data from a pipe. If stop_at_eof is True,
-        the method will stop parsing when the pipe is closed. Otherwise, it will wait for
-        new data to arrive.
-        """
+        """Main class method. Parses a stream of data from a pipe."""
+
+        logger.info("parse_stream() invoked.")
         while True:
             data = await pipe.readline()
             if len(data) == 0:  # EOF reached
-                if stop_at_eof:
-                    break
-                else:
-                    await asyncio.sleep(0.1)
-                    continue
+                break
 
             logger.debug(f"next line to parse: '{data}'")
             line = data.decode(encoding).rstrip('\n')
             await self._parse_line(line)
+
+        logger.info("parse_stream() finished.")
 
     async def parse_fifo(
             self,
             fifo_name: str,
             ) -> None:
         """Reads a stream of data from a named pipe and forwards it to parse_stream.
-        If the named pipe is disconnected from the source -
-        Should be implemented by subclasses."""
-        raise NotImplementedError
+        """
+        logger.info("parse_fifo() invoked.")
+        logger.debug(f"for fifo_name = {fifo_name}.")
+        fifo = AsyncFifo(fifo_name)
+        await fifo.open()
+        reader = fifo.get_reader()
+        await self.parse_stream(reader)
+        fifo.close()
+        logger.info("parse_fifo() finished.")
