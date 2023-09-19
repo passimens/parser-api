@@ -40,31 +40,45 @@ class AsyncFifo:
 
         logger.info("AsyncFifo.open() invoked.")
 
-        # Open source pipe in rw mode, create StreamReaders
-        # os.open with os.O_RDWR prevents blocking on open, and prevents EOF
-        # os.open with os.O_RDONLY|os.O_NONBLOCK prevents blocking, allows EOF
-        # If EOF is read from the pipe, no further data will be read from it
-        self._file = os.fdopen(
-            os.open(
-                self._path,
-                flags=os.O_RDWR,
+        try:
+            # os.open with os.O_RDWR prevents blocking on open, and prevents EOF
+            # os.open with os.O_RDONLY|os.O_NONBLOCK prevents blocking, allows EOF
+            # If EOF is read from the pipe, no further data will be read from it
+            self._file = os.fdopen(
+                os.open(
+                    self._path,
+                    flags=os.O_RDWR,
+                    )
                 )
-            )
+        except Exception as e:
+            logger.error(
+                f"AsyncFifo.open(): Failed to open named pipe {self._path} for reading."
+                )
+            raise e
 
         logger.debug(
             f"AsyncFifo.open(): named pipe {self._path} opened for reading with O_RDWR flags:"
             f" {self._file}."
             )
 
-        self._reader, self._transport = await get_stream_reader(self._file)
+        try:
+            self._reader, self._transport = await get_stream_reader(self._file)
+        except Exception as e:
+            logger.error(
+                f"AsyncFifo.open(): Failed to attach transport to named pipe {self._path}."
+                )
+            self._file.close()
+            raise e
 
         logger.debug(
             f"AsyncFifo.open(): Reader and transport are: {self._reader},"
             f" {self._transport}."
             )
 
+        return self
+
     def close(self):
-        """Closes file and _transport for the pipe."""
+        """Closes file and transport for the pipe."""
 
         logger.info("AsyncFifo.close() invoked.")
 
@@ -72,11 +86,16 @@ class AsyncFifo:
             logger.debug("AsyncFifo.close(): self._file is opened - closing...")
             self._file.close()
 
-        self._transport.close()
+        if not self._transport.is_closing():
+            self._transport.close()
 
-    def get_reader(self):
-        """Returns StreamReader object for the pipe."""
-
-        logger.info("AsyncFifo.get_reader() invoked.")
-
+    async def __aenter__(self):
+        """Async context manager entry point."""
+        logger.info("AsyncFifo.__enter__() invoked.")
         return self._reader
+
+    async def __aexit__(self, exc_type, exc, tb):
+        """Async context manager exit point."""
+        logger.info("AsyncFifo.__exit__() invoked.")
+        self.close()
+        return False

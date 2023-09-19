@@ -40,15 +40,15 @@ class BaseParser:
 
     async def parse_fifo(
             self,
-            fifo_name: str,
+            fifo_path: str,
             ) -> None:
         """Reads a stream of data from a named pipe and forwards it to parse_stream.
         """
         logger.info("parse_fifo() invoked.")
-        logger.debug(f"for fifo_name = {fifo_name}.")
-        fifo = AsyncFifo(fifo_name)
-        await fifo.open()
-        reader = fifo.get_reader()
-        await self.parse_stream(reader)
-        fifo.close()
+        logger.debug(f"for fifo_path = {fifo_path}.")
+
+        fifo = AsyncFifo(fifo_path)
+        async with await fifo.open() as reader:
+            await self.parse_stream(reader)
+
         logger.info("parse_fifo() finished.")
