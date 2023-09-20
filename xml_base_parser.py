@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 from typing import Union, List, Callable, Any, Awaitable
 import logging
 
@@ -20,7 +20,7 @@ class XmlBaseParser(BaseParser):
             events: Union[List[str], None] = None,
             ):
         super().__init__(result_callback)
-        self._xml_parser = ET.XMLPullParser(events)
+        self._xml_parser = ElementTree.XMLPullParser(events)
 
     async def _parse_line(self, line: str) -> None:
         """Parses a single line of data."""
@@ -28,10 +28,10 @@ class XmlBaseParser(BaseParser):
         for event, element in self._xml_parser.read_events():
             logger.debug(
                 f"event = {event}, element = {element}, "
-                f"reconstructed xml = '{ET.tostring(element)}'"
+                f"reconstructed xml = '{ElementTree.tostring(element)}'"
                 )
             await self._parse_xml(event, element)
 
-    async def _parse_xml(self, event: str, element: ET.Element) -> None:
+    async def _parse_xml(self, event: str, element: ElementTree.Element) -> None:
         """Parses a single XML entity. Should be implemented by subclasses."""
         raise NotImplementedError
