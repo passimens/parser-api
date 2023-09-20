@@ -2,7 +2,6 @@
 import logging
 from typing import List, Callable, Awaitable, Any
 
-from magritte.Magritte.MADescription_class import MADescription
 import asyncio
 from async_fifo import AsyncFifo
 
@@ -13,8 +12,6 @@ class BaseParser:
     """A base class for parsers. Parses text and passes it to _parse_line method
     which should be implemented by subclasses.
     """
-    # Parser class describes a list of possible parsing results as instances of MADescription hierarchy.
-    results_description: List[MADescription] = []
 
     def __init__(self, result_callback: Callable[[List[Any]], Awaitable[None]]):
         self._result_callback = result_callback
