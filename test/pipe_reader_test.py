@@ -1,5 +1,4 @@
 import asyncio
-import concurrent.futures
 import os
 import sys
 
@@ -15,6 +14,9 @@ class TestGetStreamReader(unittest.IsolatedAsyncioTestCase):
         reader, transport = await get_stream_reader(sys.stdin)
         self.assertIsInstance(reader, asyncio.StreamReader)
         self.assertIsInstance(transport, asyncio.ReadTransport)
+        print("waiting for data via stdin... expect 'abcdefg'")
+        res = await reader.readline()
+        self.assertEqual(res, b"abcdefg\n")
 
     async def test_get_fifo_reader(self):
         """Tests get_stream_reader with a named pipe."""
@@ -27,8 +29,10 @@ class TestGetStreamReader(unittest.IsolatedAsyncioTestCase):
         reader, transport = await get_stream_reader(file)
         self.assertIsInstance(reader, asyncio.StreamReader)
         self.assertIsInstance(transport, asyncio.ReadTransport)
-        print("waiting for data via named pipe test_fifo...")
+        print("waiting for data via named pipe test_fifo... expect 'gfedcba'")
         res = await reader.readline()
+        self.assertEqual(res, b"gfedcba\n")
+        transport.close()
         file.close()
 
 
