@@ -12,33 +12,32 @@ logger = logging.getLogger(__name__)
 class AsyncFifo:
     """Helper class enabling async reading from a named pipe (FIFO)."""
 
-    def __init__(
-            self,
-            path: str,
-            ):
+    def __init__(self):
 
-        self._path = path
+        self._path = None
         self._file = None
         self._reader = None
         self._transport = None
 
-        pipe_stat = os.stat(self._path)  # Might throw FileNotFoundError
+    async def open(self, path: str):
+        """Open source pipe for reading, create relevant StreamReader,
+        initialize _file, _reader and _transport attributes.
+        """
+
+        logger.info("AsyncFifo.open() invoked.")
+
+        pipe_stat = os.stat(path)  # Might throw FileNotFoundError
 
         if not stat.S_ISFIFO(pipe_stat.st_mode):
             logger.error(
-                f"AsyncFifo.__init__(): Unexpected _file type at {self._path}. "
+                f"AsyncFifo.__init__(): Unexpected _file type at {path}. "
                 "The provided path doesn't seem to be a named pipe."
                 )
             raise TypeError(
                 "The provided path doesn't seem to be a named pipe."
                 )
 
-    async def open(self):
-        """Open source pipe for reading, create relevant StreamReader,
-        initialize _file, _reader and _transport attributes.
-        """
-
-        logger.info("AsyncFifo.open() invoked.")
+        self._path = path
 
         try:
             # os.open with os.O_RDWR prevents blocking on open, and prevents EOF
