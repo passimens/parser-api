@@ -26,6 +26,14 @@ class AsyncFifo:
 
         logger.info("AsyncFifo.open() invoked.")
 
+        if not self.is_closed():
+            logger.error(
+                "AsyncFifo.open(): Attempted to open a pipe that is already open."
+                )
+            raise RuntimeError(
+                "Attempted to open a pipe that is already open."
+                )
+
         pipe_stat = os.stat(path)  # Might throw FileNotFoundError
 
         if not stat.S_ISFIFO(pipe_stat.st_mode):
@@ -81,11 +89,11 @@ class AsyncFifo:
 
         logger.info("AsyncFifo.close() invoked.")
 
-        if not self._file.closed:
+        if self._file and not self._file.closed:
             logger.debug("AsyncFifo.close(): self._file is opened - closing...")
             self._file.close()
 
-        if not self._transport.is_closing():
+        if self._transport and not self._transport.is_closing():
             self._transport.close()
 
     def is_closed(self):
