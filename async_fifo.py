@@ -89,6 +89,10 @@ class AsyncFifo:
         if not self._transport.is_closing():
             self._transport.close()
 
+    def is_closed(self):
+        """Returns True if file and transport are closed, False otherwise."""
+        return (not self._file or self._file.closed) and (not self._transport or self._transport.is_closing())
+
     def __enter__(self):
         """Async context manager entry point."""
         logger.info("AsyncFifo.__enter__() invoked.")
