@@ -69,7 +69,7 @@ class TestAsyncFifoInteractive(unittest.IsolatedAsyncioTestCase):
         self.fifo.close()
 
     async def test_read_using_with(self):
-        """Tests AsyncFifo reader within context manager."""
+        """Tests AsyncFifo _reader within context manager."""
         self.fifo = AsyncFifo()
         with await self.fifo.open("test_fifo") as fifo_reader:
             print("waiting for data via named pipe test_fifo... expect 'gfedcba'")

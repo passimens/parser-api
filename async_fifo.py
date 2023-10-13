@@ -110,3 +110,8 @@ class AsyncFifo:
         logger.info("AsyncFifo.__exit__() invoked.")
         self.close()
         return False
+
+    @property
+    def reader(self):
+        """Returns StreamReader object for the pipe."""
+        return self._reader
