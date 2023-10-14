@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import asyncio
 import logging
 import sys
 
@@ -23,6 +23,7 @@ class AsyncStdin:
             return
         self._reader = None
         self._transport = None
+        self._loop = None
 
     async def open(self):
         """Open sys.stdin for reading, create relevant StreamReader,
@@ -31,7 +32,9 @@ class AsyncStdin:
 
         logger.info("AsyncStdin.open() invoked.")
 
-        if not self.is_closed():
+        if not self.is_closed() and self._loop is asyncio.get_running_loop():
+            # sys.stdin is already open and the loop is the same
+            # the loop might be different if the singleton is reused
             return self
 
         try:
@@ -42,9 +45,11 @@ class AsyncStdin:
                 )
             raise e
 
+        self._loop = asyncio.get_running_loop()
+
         logger.debug(
-            f"AsyncStdin.open(): Reader and transport are: {self._reader},"
-            f" {self._transport}."
+            f"AsyncStdin.open(): Reader, transport, and loop are: {self._reader},"
+            f" {self._transport}, {self._loop}."
             )
 
         return self
