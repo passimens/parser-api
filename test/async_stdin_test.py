@@ -1,5 +1,6 @@
 from async_stdin import AsyncStdin
 import unittest
+import logging
 
 
 class TestAsyncStdinAuto(unittest.IsolatedAsyncioTestCase):
@@ -8,27 +9,41 @@ class TestAsyncStdinAuto(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.stdin = AsyncStdin()
 
-    async def test_singleton(self):
-        """Tests if AsyncStdin is a singleton."""
-        stdin2 = AsyncStdin()
-        self.assertIs(self.stdin, stdin2)
+    def tearDown(self) -> None:
+        self.stdin.close()
 
     async def test_open(self):
         """Tests AsyncStdin.open() and AsyncStdin.close()."""
+        self.assertTrue(self.stdin.is_closed())
         await self.stdin.open()
         self.assertFalse(self.stdin.is_closed())
+        self.stdin.close()
+        self.assertTrue(self.stdin.is_closed())
 
     async def test_reopen_opened(self):
         """Tests AsyncStdin.open() called for already opened pipe."""
+        self.assertTrue(self.stdin.is_closed())
         await self.stdin.open()
         self.assertFalse(self.stdin.is_closed())
+        with self.assertRaises(RuntimeError):
+            await self.stdin.open()
+
+    async def test_reopen_closed(self):
+        """Tests AsyncStdin.open() called twice."""
+        self.assertTrue(self.stdin.is_closed())
+        await self.stdin.open()
+        self.assertFalse(self.stdin.is_closed())
+        self.stdin.close()
+        self.assertTrue(self.stdin.is_closed())
         await self.stdin.open()
         self.assertFalse(self.stdin.is_closed())
 
     async def test_context_manager(self):
         """Tests AsyncStdin.__enter__() and AsyncStdin.__exit__()."""
+        self.assertTrue(self.stdin.is_closed())
         with await self.stdin.open():
             self.assertFalse(self.stdin.is_closed())
+        self.assertTrue(self.stdin.is_closed())
 
 
 class TestAsyncStdinInteractive(unittest.IsolatedAsyncioTestCase):
@@ -45,4 +60,5 @@ class TestAsyncStdinInteractive(unittest.IsolatedAsyncioTestCase):
 
 
 if __name__ == "__main__":
+    # logging.basicConfig(level=logging.DEBUG)
     unittest.main()

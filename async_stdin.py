@@ -1,29 +1,20 @@
 #!/usr/bin/env python3
 import asyncio
 import logging
+import os
 import sys
 
 from pipe_reader import get_stream_reader
 
 logger = logging.getLogger(__name__)
 
-
 class AsyncStdin:
     """Helper class enabling async reading from sys.stdin."""
 
-    # Singleton pattern to prevent closing and reopening of sys.stdin
-    @staticmethod
-    def __new__(cls):
-        if not hasattr(cls, '_instance'):
-            cls._instance = super(AsyncStdin, cls).__new__(cls)
-        return cls._instance
-
     def __init__(self):
-        if hasattr(self, '_reader'):
-            return
+        self._stdin = None
         self._reader = None
         self._transport = None
-        self._loop = None
 
     async def open(self):
         """Open sys.stdin for reading, create relevant StreamReader,
@@ -32,31 +23,49 @@ class AsyncStdin:
 
         logger.info("AsyncStdin.open() invoked.")
 
-        if not self.is_closed() and self._loop is asyncio.get_running_loop():
-            # sys.stdin is already open and the loop is the same
-            # the loop might be different if the singleton is reused
-            return self
+        if not self.is_closed():
+            logger.error(
+                "AsyncStdin.open(): Attempted to open a pipe that is already open."
+                )
+            raise RuntimeError(
+                "Attempted to open a pipe that is already open."
+                )
 
         try:
-            self._reader, self._transport = await get_stream_reader(sys.stdin)
+            self._stdin = os.fdopen(os.dup(sys.stdin.fileno()))
+            logger.debug(f"self._stdin = {self._stdin!r}")
+        except Exception as e:
+            logger.error(
+                f"AsyncStdin.open(): Failed to duplicate sys.stdin file descriptor."
+                )
+            raise e
+
+        try:
+            self._reader, self._transport = await get_stream_reader(self._stdin)
         except Exception as e:
             logger.error(
                 f"AsyncStdin.open(): Failed to attach transport to sys.stdin."
                 )
             raise e
 
-        self._loop = asyncio.get_running_loop()
-
         logger.debug(
-            f"AsyncStdin.open(): Reader, transport, and loop are: {self._reader},"
-            f" {self._transport}, {self._loop}."
+            f"AsyncStdin.open(): Reader, and transport are: {self._reader},"
+            f" {self._transport}."
             )
 
         return self
 
     def close(self):
         """Closes transport for sys.stdin."""
-        pass  # we don't want to close sys.stdin
+        logger.info("AsyncStdin.close() invoked.")
+        if self._stdin and not self._stdin.closed:
+            logger.debug("AsyncStdin.close(): self._stdin is opened - closing...")
+            self._stdin.close()
+            self._stdin = None
+        if self._transport:
+            logger.debug("AsyncStdin.close(): self._transport is opened - closing...")
+            self._transport.close()
+            self._transport = None
 
     def is_closed(self):
         """Returns True if file and transport are closed, False otherwise."""
