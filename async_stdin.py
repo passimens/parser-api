@@ -31,6 +31,14 @@ class AsyncStdin:
                 "Attempted to open a pipe that is already open."
                 )
 
+        if self._stdin:
+            logger.error(
+                "AsyncStdin.open(): re-opening of sys.stdin is not supported."
+                )
+            raise RuntimeError(
+                "Re-opening of sys.stdin is not supported."
+                )
+
         try:
             self._stdin = os.fdopen(os.dup(sys.stdin.fileno()))
             logger.debug(f"self._stdin = {self._stdin!r}")
@@ -61,11 +69,9 @@ class AsyncStdin:
         if self._stdin and not self._stdin.closed:
             logger.debug("AsyncStdin.close(): self._stdin is opened - closing...")
             self._stdin.close()
-            self._stdin = None
         if self._transport:
             logger.debug("AsyncStdin.close(): self._transport is opened - closing...")
             self._transport.close()
-            self._transport = None
 
     def is_closed(self):
         """Returns True if file and transport are closed, False otherwise."""

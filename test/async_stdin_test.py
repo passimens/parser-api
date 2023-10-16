@@ -35,8 +35,8 @@ class TestAsyncStdinAuto(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.stdin.is_closed())
         self.stdin.close()
         self.assertTrue(self.stdin.is_closed())
-        await self.stdin.open()
-        self.assertFalse(self.stdin.is_closed())
+        with self.assertRaises(RuntimeError):
+            await self.stdin.open()
 
     async def test_context_manager(self):
         """Tests AsyncStdin.__enter__() and AsyncStdin.__exit__()."""
@@ -51,6 +51,9 @@ class TestAsyncStdinInteractive(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self.stdin = AsyncStdin()
+
+    def tearDown(self) -> None:
+        self.stdin.close()
 
     async def test_read_using_with(self):
         """Tests AsyncStdin _reader within context manager."""
