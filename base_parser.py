@@ -24,7 +24,7 @@ class BaseParser:
     async def parse_stream(
             self,
             pipe: asyncio.StreamReader,
-            encoding: str = "latin1",
+            encoding: str = "utf-8",
             ) -> None:
         """Main class method. Parses a stream of data from a pipe."""
 
@@ -43,6 +43,7 @@ class BaseParser:
     async def parse_fifo(
             self,
             fifo_path: str,
+            encoding: str = "utf-8",
             ) -> None:
         """Reads a stream of data from a named pipe and forwards it to parse_stream.
         """
@@ -51,16 +52,16 @@ class BaseParser:
 
         fifo = AsyncFifo()
         with await fifo.open(fifo_path) as reader:
-            await self.parse_stream(reader)
+            await self.parse_stream(reader, encoding)
 
         logger.info("parse_fifo() finished.")
 
-    async def parse_stdin(self) -> None:
+    async def parse_stdin(self, encoding: str = 'utf-8') -> None:
         """Reads a stream of data from sys.stdin and forwards it to parse_stream."""
         logger.info("parse_stdin() invoked.")
 
         stdin = AsyncStdin()
         with await stdin.open() as reader:
-            await self.parse_stream(reader)
+            await self.parse_stream(reader, encoding)
 
         logger.info("parse_stdin() finished.")
