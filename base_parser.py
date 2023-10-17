@@ -4,6 +4,7 @@ from typing import List, Callable, Awaitable, Any
 
 import asyncio
 from async_fifo import AsyncFifo
+from async_stdin import AsyncStdin
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,18 @@ class BaseParser:
         logger.info("parse_fifo() invoked.")
         logger.debug(f"for fifo_path = {fifo_path}.")
 
-        fifo = AsyncFifo(fifo_path)
-        with await fifo.open() as reader:
+        fifo = AsyncFifo()
+        with await fifo.open(fifo_path) as reader:
             await self.parse_stream(reader)
 
         logger.info("parse_fifo() finished.")
+
+    async def parse_stdin(self) -> None:
+        """Reads a stream of data from sys.stdin and forwards it to parse_stream."""
+        logger.info("parse_stdin() invoked.")
+
+        stdin = AsyncStdin()
+        with await stdin.open() as reader:
+            await self.parse_stream(reader)
+
+        logger.info("parse_stdin() finished.")

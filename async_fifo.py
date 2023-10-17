@@ -12,33 +12,40 @@ logger = logging.getLogger(__name__)
 class AsyncFifo:
     """Helper class enabling async reading from a named pipe (FIFO)."""
 
-    def __init__(
-            self,
-            path: str,
-            ):
+    def __init__(self):
 
-        self._path = path
+        self._path = None
         self._file = None
         self._reader = None
         self._transport = None
 
-        pipe_stat = os.stat(self._path)  # Might throw FileNotFoundError
+    async def open(self, path: str):
+        """Open source pipe for reading, create relevant StreamReader,
+        initialize _file, _reader and _transport attributes.
+        """
+
+        logger.info("AsyncFifo.open() invoked.")
+
+        if not self.is_closed():
+            logger.error(
+                "AsyncFifo.open(): Attempted to open a pipe that is already open."
+                )
+            raise RuntimeError(
+                "Attempted to open a pipe that is already open."
+                )
+
+        pipe_stat = os.stat(path)  # Might throw FileNotFoundError
 
         if not stat.S_ISFIFO(pipe_stat.st_mode):
             logger.error(
-                f"AsyncFifo.__init__(): Unexpected _file type at {self._path}. "
+                f"AsyncFifo.__init__(): Unexpected _file type at {path}. "
                 "The provided path doesn't seem to be a named pipe."
                 )
             raise TypeError(
                 "The provided path doesn't seem to be a named pipe."
                 )
 
-    async def open(self):
-        """Open source pipe for reading, create relevant StreamReader,
-        initialize _file, _reader and _transport attributes.
-        """
-
-        logger.info("AsyncFifo.open() invoked.")
+        self._path = path
 
         try:
             # os.open with os.O_RDWR prevents blocking on open, and prevents EOF
@@ -82,12 +89,16 @@ class AsyncFifo:
 
         logger.info("AsyncFifo.close() invoked.")
 
-        if not self._file.closed:
+        if self._file and not self._file.closed:
             logger.debug("AsyncFifo.close(): self._file is opened - closing...")
             self._file.close()
 
-        if not self._transport.is_closing():
+        if self._transport and not self._transport.is_closing():
             self._transport.close()
+
+    def is_closed(self):
+        """Returns True if file and transport are closed, False otherwise."""
+        return (not self._file or self._file.closed) and (not self._transport or self._transport.is_closing())
 
     def __enter__(self):
         """Async context manager entry point."""
@@ -99,3 +110,8 @@ class AsyncFifo:
         logger.info("AsyncFifo.__exit__() invoked.")
         self.close()
         return False
+
+    @property
+    def reader(self):
+        """Returns StreamReader object for the pipe."""
+        return self._reader
