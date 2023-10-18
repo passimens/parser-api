@@ -20,5 +20,5 @@ echo -e '<tag2>\n<tag1>test1</tag1>\n</tag2>' | PYTHONPATH={$PYTHONPATH}:`pwd`/.
 echo -e '<tag4>\n<tag3>test3</tag3>\n</tag4>' > test_fifo &
 PYTHONPATH={$PYTHONPATH}:`pwd`/.. python3 -m unittest xml_base_parser_test.TestXmlBaseParserCustomParseXml.test_parse_fifo
 
-
+PYTHONPATH={$PYTHONPATH}:`pwd`/.. python3 -m unittest xml_base_parser_test.TestXmlBaseParserCustomParseXml.test_parse_stream
 
