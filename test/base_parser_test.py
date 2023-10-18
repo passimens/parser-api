@@ -84,6 +84,24 @@ class TestBaseParserCustomParseLine(unittest.IsolatedAsyncioTestCase):
         task.cancel()
         self.assertEqual(self.parsed_items, ["gfedcba", "hgfedcb"])
 
+    async def test_parse_stream(self):
+        """Tests BaseParser.parse_stream()."""
+        print("Running a command which would return 2 lines, 'bcdefgh', 'cdefghi'.")
+        proc = await asyncio.create_subprocess_shell(
+            "echo 'bcdefgh\ncdefghi'",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            )
+        waited = 0
+        task = asyncio.create_task(self.parser.parse_stream(proc.stdout))
+        while waited < 10:
+            await asyncio.sleep(0.1)
+            if len(self.parsed_items) >= 2:
+                break
+            waited += 1
+        task.cancel()
+        self.assertEqual(self.parsed_items, ["bcdefgh", "cdefghi"])
+
 
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)

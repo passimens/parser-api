@@ -113,6 +113,27 @@ class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.parsed_items[1].tag, "tag4")
         self.assertEqual(self.parsed_items[1].text, None)
 
+    async def test_parse_stream(self):
+        """Tests XmlBaseParser.parse_stream()."""
+        print("Running a command which would return 2 tags, '<tag6><tag5>test5</tag5></tag6>'.")
+        proc = await asyncio.create_subprocess_shell(
+            'echo "<tag6><tag5>test5</tag5></tag6>"',
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            )
+        waited = 0
+        task = asyncio.create_task(self.parser.parse_stream(proc.stdout))
+        while waited < 10:
+            await asyncio.sleep(0.1)
+            if len(self.parsed_items) >= 2:
+                break
+            waited += 1
+        task.cancel()
+        self.assertEqual(self.parsed_items[0].tag, "tag5")
+        self.assertEqual(self.parsed_items[0].text, "test5")
+        self.assertEqual(self.parsed_items[1].tag, "tag6")
+        self.assertEqual(self.parsed_items[1].text, None)
+
 
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
