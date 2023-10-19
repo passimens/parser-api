@@ -44,15 +44,15 @@ class TestXmlBaseParser(unittest.IsolatedAsyncioTestCase):
 class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
     """Tests for XmlBaseParser with custom _parse_xml."""
 
-    async def _in_test_callback(self, item):
+    async def _in_test_callback(self, items):
         """Callback function for use in tests."""
-        self.parsed_items.append(item)
+        self.parsed_items.extend(items)
 
     async def asyncSetUp(self) -> None:
         async def _parser_custom_parse_xml(obj, event: str, element: ElementTree.Element):
             """Custom _parse_xml method. Will be bound to self.parser in setUp()."""
             # just pass the original xml element to the callback
-            await(obj._result_callback(element))
+            await obj._result_callback([element])
 
         self.parsed_items = []
         self.parser = XmlBaseParser(self._in_test_callback)
