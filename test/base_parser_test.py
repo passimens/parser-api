@@ -36,15 +36,15 @@ class TestBaseParser(unittest.IsolatedAsyncioTestCase):
 class TestBaseParserCustomParseLine(unittest.IsolatedAsyncioTestCase):
     """Tests for BaseParser with custom _parse_line."""
 
-    async def _in_test_callback(self, item):
+    async def _in_test_callback(self, items):
         """Callback function for use in tests."""
-        self.parsed_items.append(item)
+        self.parsed_items.extend(items)
 
     async def asyncSetUp(self) -> None:
         async def _parser_custom_parse_line(obj, line: str):
             """Custom _parse_line method. Will be bound to self.parser in setUp()."""
             # just pass the original line to the callback
-            await(obj._result_callback(line))
+            await obj._result_callback([line])
 
         self.parsed_items = []
         self.parser = BaseParser(self._in_test_callback)
