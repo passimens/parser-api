@@ -17,6 +17,10 @@ class BaseParser:
     def __init__(self, result_callback: Callable[[List[Any]], Awaitable[None]]):
         self._result_callback = result_callback
 
+    async def _on_eof(self):
+        """Called when EOF is reached."""
+        pass
+
     async def _parse_line(self, line: str):
         """Parses a single line of data. Should be implemented by subclasses."""
         raise NotImplementedError
@@ -32,6 +36,7 @@ class BaseParser:
         while True:
             data = await pipe.readline()
             if len(data) == 0:  # EOF reached
+                await self._on_eof()
                 break
 
             logger.debug(f"next line to parse: '{data}'")
