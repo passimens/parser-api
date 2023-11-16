@@ -5,6 +5,7 @@ from typing import Union, List, Callable, Any, Awaitable
 import logging
 
 from base_parser import BaseParser
+from error import FormatError
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +25,17 @@ class XmlBaseParser(BaseParser):
 
     async def _parse_line(self, line: str) -> None:
         """Parses a single line of data."""
+
         self._xml_parser.feed(line)
-        for event, element in self._xml_parser.read_events():
-            logger.debug(
-                f"event = {event}, element = {element}, "
-                f"reconstructed xml = '{ElementTree.tostring(element)}'"
-                )
-            await self._parse_xml(event, element)
+        try:
+            for event, element in self._xml_parser.read_events():
+                logger.debug(
+                    f"event = {event}, element = {element}, "
+                    f"reconstructed xml = '{ElementTree.tostring(element)}'"
+                    )
+                await self._parse_xml(event, element)
+        except ElementTree.ParseError as e:
+            raise FormatError(f"XML parsing error: {e}") from e
 
     async def _parse_xml(self, event: str, element: ElementTree.Element) -> None:
         """Parses a single XML entity. Should be implemented by subclasses."""
