@@ -2,6 +2,7 @@ import asyncio
 import xml.etree.ElementTree as ElementTree
 from xml_base_parser import XmlBaseParser
 import unittest
+from error import FormatError
 
 
 async def a_pass(item):
@@ -64,6 +65,8 @@ class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
         await self.parser._parse_xml(
             "end", ElementTree.fromstring("<tag>test</tag>")
             )
+        self.assertEqual(len(self.parsed_items), 1)
+        self.assertTrue(isinstance(self.parsed_items[0], ElementTree.Element))
         self.assertEqual(self.parsed_items[0].tag, "tag")
         self.assertEqual(self.parsed_items[0].text, "test")
 
@@ -71,10 +74,18 @@ class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
         """Tests XmlBaseParser._parse_line()."""
         await self.parser._parse_line("<tag><tag0>test0</tag0></tag>")
         await self.parser._parse_line("")
+        self.assertEqual(len(self.parsed_items), 2)
+        self.assertTrue(isinstance(self.parsed_items[0], ElementTree.Element))
+        self.assertTrue(isinstance(self.parsed_items[1], ElementTree.Element))
         self.assertEqual(self.parsed_items[0].tag, "tag0")
         self.assertEqual(self.parsed_items[0].text, "test0")
         self.assertEqual(self.parsed_items[1].tag, "tag")
         self.assertEqual(self.parsed_items[1].text, None)
+
+    async def test_invalid_xml(self):
+        """Tests XmlBaseParser._parse_line() with invalid XML input."""
+        with self.assertRaises(FormatError):
+            await self.parser._parse_line("tag><tag0>test0</tag0></tag>")
 
     async def test_parse_stdin(self):
         """Tests XmlBaseParser.parse_stdin()."""
@@ -89,6 +100,9 @@ class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
                 break
             waited += 1
         task.cancel()
+        self.assertEqual(len(self.parsed_items), 2)
+        self.assertTrue(isinstance(self.parsed_items[0], ElementTree.Element))
+        self.assertTrue(isinstance(self.parsed_items[1], ElementTree.Element))
         self.assertEqual(self.parsed_items[0].tag, "tag1")
         self.assertEqual(self.parsed_items[0].text, "test1")
         self.assertEqual(self.parsed_items[1].tag, "tag2")
@@ -108,6 +122,9 @@ class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
                 break
             waited += 1
         task.cancel()
+        self.assertEqual(len(self.parsed_items), 2)
+        self.assertTrue(isinstance(self.parsed_items[0], ElementTree.Element))
+        self.assertTrue(isinstance(self.parsed_items[1], ElementTree.Element))
         self.assertEqual(self.parsed_items[0].tag, "tag3")
         self.assertEqual(self.parsed_items[0].text, "test3")
         self.assertEqual(self.parsed_items[1].tag, "tag4")
@@ -129,6 +146,9 @@ class TestXmlBaseParserCustomParseXml(unittest.IsolatedAsyncioTestCase):
                 break
             waited += 1
         task.cancel()
+        self.assertEqual(len(self.parsed_items), 2)
+        self.assertTrue(isinstance(self.parsed_items[0], ElementTree.Element))
+        self.assertTrue(isinstance(self.parsed_items[1], ElementTree.Element))
         self.assertEqual(self.parsed_items[0].tag, "tag5")
         self.assertEqual(self.parsed_items[0].text, "test5")
         self.assertEqual(self.parsed_items[1].tag, "tag6")
