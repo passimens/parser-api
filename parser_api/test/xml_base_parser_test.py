@@ -1,8 +1,8 @@
 import asyncio
 import xml.etree.ElementTree as ElementTree
-from xml_base_parser import XmlBaseParser
+from parser_api.xml_base_parser import XmlBaseParser
 import unittest
-from error import FormatError
+from parser_api.error import FormatError
 
 
 async def a_pass(item):

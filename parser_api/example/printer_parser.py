@@ -2,8 +2,8 @@ import asyncio
 import logging
 import sys
 
-from base_parser import BaseParser
-from pipe_reader import get_stream_reader
+from parser_api.base_parser import BaseParser
+from parser_api.pipe_reader import get_stream_reader
 
 logger = logging.getLogger(__name__)
 

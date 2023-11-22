@@ -1,4 +1,4 @@
-from async_fifo import AsyncFifo
+from parser_api.async_fifo import AsyncFifo
 import unittest
 
 

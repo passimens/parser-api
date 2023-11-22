@@ -1,6 +1,5 @@
-from async_stdin import AsyncStdin
+from parser_api.async_stdin import AsyncStdin
 import unittest
-import logging
 
 
 class TestAsyncStdinAuto(unittest.IsolatedAsyncioTestCase):

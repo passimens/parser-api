@@ -3,8 +3,8 @@ import logging
 import sys
 from xml.etree import ElementTree
 
-from xml_base_parser import XmlBaseParser
-from pipe_reader import get_stream_reader
+from parser_api.xml_base_parser import XmlBaseParser
+from parser_api.pipe_reader import get_stream_reader
 
 logger = logging.getLogger(__name__)
 

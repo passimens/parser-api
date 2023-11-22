@@ -3,8 +3,8 @@ import logging
 from typing import List, Callable, Awaitable, Any
 
 import asyncio
-from async_fifo import AsyncFifo
-from async_stdin import AsyncStdin
+from parser_api.async_fifo import AsyncFifo
+from parser_api.async_stdin import AsyncStdin
 
 logger = logging.getLogger(__name__)
 
