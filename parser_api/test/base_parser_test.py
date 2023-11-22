@@ -1,5 +1,5 @@
 import asyncio
-from base_parser import BaseParser
+from parser_api.base_parser import BaseParser
 import unittest
 
 

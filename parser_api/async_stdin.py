@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-from . pipe_reader import get_stream_reader
+from parser_api.pipe_reader import get_stream_reader
 
 logger = logging.getLogger(__name__)
 

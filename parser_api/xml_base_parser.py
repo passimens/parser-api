@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ElementTree
 from typing import Union, List, Callable, Any, Awaitable
 import logging
 
-from base_parser import BaseParser
-from error import FormatError
+from parser_api.base_parser import BaseParser
+from parser_api.error import FormatError
 
 logger = logging.getLogger(__name__)
 
