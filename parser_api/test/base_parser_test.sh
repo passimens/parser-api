@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm test_fifo
+mkfifo test_fifo
 
 PYTHONPATH={$PYTHONPATH}:`pwd`/../.. python3 -m unittest base_parser_test.TestBaseParser.test_parse_line
 
@@ -18,5 +20,4 @@ PYTHONPATH={$PYTHONPATH}:`pwd`/../.. python3 -m unittest base_parser_test.TestBa
 
 PYTHONPATH={$PYTHONPATH}:`pwd`/../.. python3 -m unittest base_parser_test.TestBaseParserCustomParseLine.test_parse_stream
 
-
-
+rm test_fifo
