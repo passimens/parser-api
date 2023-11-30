@@ -19,7 +19,7 @@ class AsyncFifo:
         self._reader = None
         self._transport = None
 
-    async def open(self, path: str):
+    async def open(self, path: str, allow_eof: bool = False):
         """Open source pipe for reading, create relevant StreamReader,
         initialize _file, _reader and _transport attributes.
         """
@@ -54,7 +54,7 @@ class AsyncFifo:
             self._file = os.fdopen(
                 os.open(
                     self._path,
-                    flags=os.O_RDWR,
+                    flags=os.O_RDONLY | os.O_NONBLOCK if allow_eof else os.O_RDWR,
                     )
                 )
         except Exception as e:
