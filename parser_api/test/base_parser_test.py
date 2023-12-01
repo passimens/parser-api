@@ -69,14 +69,33 @@ class TestBaseParserCustomParseLine(unittest.IsolatedAsyncioTestCase):
         task.cancel()
         self.assertEqual(self.parsed_items, ["abcdefg", "bcdefgh"])
 
-    async def test_parse_fifo(self):
-        """Tests BaseParser.parse_fifo()."""
+    async def test_parse_fifo_wait(self):
+        """Tests BaseParser.parse_fifo() with nowait=False."""
         print(
             f"Parsing data from named pipe {self.fifo_path}... expect 2 lines, 'gfedcba', 'hgfedcb' within 60 seconds."
             )
         waited = 0
+        task = asyncio.create_task(self.parser.parse_fifo(self.fifo_path, nowait=False))
+        while waited < 60:
+            await asyncio.sleep(1)
+            if len(self.parsed_items) >= 2:
+                break
+            waited += 1
+        task.cancel()
+        self.assertEqual(self.parsed_items, ["gfedcba", "hgfedcb"])
+
+    async def test_parse_fifo_nowait(self):
+        """Tests BaseParser.parse_fifo() with nowait=True (default)."""
+        print(
+            f"Parsing data from named pipe {self.fifo_path}... expect 2 lines, 'gfedcba', 'hgfedcb' right away."
+            f"Will fail if run manually without sending data to {self.fifo_path}, "
+            f"because the parse_fifo method will not wait for data."
+            )
+        waited = 0
         task = asyncio.create_task(self.parser.parse_fifo(self.fifo_path))
         while waited < 60:
+            if task.done():
+                break
             await asyncio.sleep(1)
             if len(self.parsed_items) >= 2:
                 break
