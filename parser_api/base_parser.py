@@ -49,14 +49,17 @@ class BaseParser:
             self,
             fifo_path: str,
             encoding: str = "utf-8",
+            nowait: bool = True,
             ) -> None:
         """Reads a stream of data from a named pipe and forwards it to parse_stream.
+        If nowait is True, EOF will be allowed and the method will return immediately.
+        Otherwise, it will block waiting for data.
         """
         logger.info("parse_fifo() invoked.")
         logger.debug(f"for fifo_path = {fifo_path}.")
 
         fifo = AsyncFifo()
-        with await fifo.open(fifo_path) as reader:
+        with await fifo.open(fifo_path, allow_eof=nowait) as reader:
             await self.parse_stream(reader, encoding)
 
         logger.info("parse_fifo() finished.")
