@@ -40,7 +40,7 @@ class BaseParser:
                 break
 
             logger.debug(f"next line to parse: '{data}'")
-            line = data.decode(encoding).rstrip('\n')
+            line = data.decode(encoding)
             await self._parse_line(line)
 
         logger.info("parse_stream() finished.")
